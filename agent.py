@@ -2,7 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
+from langchain_huggingface import HuggingFaceEndpointEmbeddings, HuggingFaceEndpoint
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -14,9 +14,17 @@ def load_agent(index_path: str = "faiss_index"):
     if not os.path.exists(index_path):
         raise FileNotFoundError(f"FAISS index not found at {index_path}. Please run ingest.py first.")
 
-    # 1. Load the embedding model (must match the one used during ingestion)
-    print("Loading embedding model...")
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    if not hf_token or hf_token == "your_token_here":
+        raise ValueError("Please set a valid HUGGINGFACEHUB_API_TOKEN in the .env file.")
+
+    # 1. Load the embedding model via Free API (must match the one used during ingestion)
+    print("Loading embedding model via Free API...")
+    embeddings = HuggingFaceEndpointEmbeddings(
+        model="sentence-transformers/all-MiniLM-L6-v2",
+        task="feature-extraction",
+        huggingfacehub_api_token=hf_token
+    )
 
     # 2. Load the vector store
     print("Loading FAISS vector database...")
@@ -25,10 +33,6 @@ def load_agent(index_path: str = "faiss_index"):
     # 3. Initialize the LLM (using Hugging Face Inference API)
     # We use a free-tier compatible model like mistralai/Mistral-7B-Instruct-v0.2
     # Ensure HUGGINGFACEHUB_API_TOKEN is set in your .env file
-    hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    if not hf_token or hf_token == "your_token_here":
-        raise ValueError("Please set a valid HUGGINGFACEHUB_API_TOKEN in the .env file.")
-
     print("Initializing LLM via Hugging Face API...")
     # Using HuggingFaceEndpoint for the Serverless Inference API
     llm = HuggingFaceEndpoint(
