@@ -3,9 +3,7 @@ import argparse
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEndpointEmbeddings, HuggingFaceEndpoint
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
+# Removed legacy chains imports
 
 def load_agent(index_path: str = "faiss_index"):
     """
@@ -42,26 +40,38 @@ def load_agent(index_path: str = "faiss_index"):
         huggingfacehub_api_token=hf_token
     )
 
-    # 4. Create the Retrieval Chain
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5}) # Retrieve top 5 chunks
+    # 4. Create a custom Retrieval Chain logic to avoid dependency issues
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
-    # Define the system prompt for the agent
     system_prompt = (
         "You are an expert AI coding assistant. Use the following pieces of retrieved code context "
         "to answer the user's question about the repository. "
         "If you don't know the answer or the context doesn't contain the answer, just say that you don't know. "
         "Do not make up an answer. Provide clear, concise explanations and code examples if appropriate.\n\n"
-        "Context:\n{context}"
+        "Context:\n{context}\n\n"
+        "User Question: {question}"
     )
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", "{input}"),
-    ])
+    class CustomRAGChain:
+        def __init__(self, retriever, llm, prompt_template):
+            self.retriever = retriever
+            self.llm = llm
+            self.prompt_template = prompt_template
 
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        def invoke(self, inputs):
+            query = inputs["input"]
+            docs = self.retriever.invoke(query)
+            context = "\n\n".join([doc.page_content for doc in docs])
+            
+            final_prompt = self.prompt_template.format(context=context, question=query)
+            answer = self.llm.invoke(final_prompt)
+            
+            return {
+                "answer": answer,
+                "context": docs
+            }
 
+    rag_chain = CustomRAGChain(retriever, llm, system_prompt)
     return rag_chain
 
 def interactive_session(index_path: str = "faiss_index"):
