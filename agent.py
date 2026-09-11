@@ -32,12 +32,38 @@ def load_agent(index_path: str = "faiss_index"):
     # We use a free-tier compatible model like mistralai/Mistral-7B-Instruct-v0.2
     # Ensure HUGGINGFACEHUB_API_TOKEN is set in your .env file
     print("Initializing LLM via Hugging Face API...")
-    # Using HuggingFaceEndpoint for the Serverless Inference API
-    llm = HuggingFaceEndpoint(
+    
+    import requests
+    from langchain_core.language_models.llms import LLM
+    from typing import Optional, List, Any
+
+    class HuggingFaceChatLLM(LLM):
+        repo_id: str
+        api_token: str
+        temperature: float = 0.1
+        max_tokens: int = 512
+        
+        @property
+        def _llm_type(self) -> str:
+            return "huggingface_chat"
+            
+        def _call(self, prompt: str, stop: Optional[List[str]] = None, **kwargs: Any) -> str:
+            url = f"https://api-inference.huggingface.co/models/{self.repo_id}/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
+            payload = {
+                "model": self.repo_id,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+            }
+            res = requests.post(url, headers=headers, json=payload)
+            if res.status_code != 200:
+                raise Exception(f"HF API Error: {res.text}")
+            return res.json()["choices"][0]["message"]["content"]
+
+    llm = HuggingFaceChatLLM(
         repo_id="mistralai/Mistral-7B-Instruct-v0.2",
-        temperature=0.1,
-        max_new_tokens=512,
-        huggingfacehub_api_token=hf_token
+        api_token=hf_token
     )
 
     # 4. Create a custom Retrieval Chain logic to avoid dependency issues
