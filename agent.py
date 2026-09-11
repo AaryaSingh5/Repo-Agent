@@ -33,7 +33,7 @@ def load_agent(index_path: str = "faiss_index"):
     # Ensure HUGGINGFACEHUB_API_TOKEN is set in your .env file
     print("Initializing LLM via Hugging Face API...")
     
-    import requests
+    from huggingface_hub import InferenceClient
     from langchain_core.language_models.llms import LLM
     from typing import Optional, List, Any
 
@@ -48,21 +48,20 @@ def load_agent(index_path: str = "faiss_index"):
             return "huggingface_chat"
             
         def _call(self, prompt: str, stop: Optional[List[str]] = None, **kwargs: Any) -> str:
-            url = f"https://api-inference.huggingface.co/models/{self.repo_id}/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
-            payload = {
-                "model": self.repo_id,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": self.temperature,
-                "max_tokens": self.max_tokens,
-            }
-            res = requests.post(url, headers=headers, json=payload)
-            if res.status_code != 200:
-                raise Exception(f"HF API Error: {res.text}")
-            return res.json()["choices"][0]["message"]["content"]
+            client = InferenceClient(model=self.repo_id, token=self.api_token)
+            messages = [{"role": "user", "content": prompt}]
+            try:
+                response = client.chat_completion(
+                    messages=messages,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                raise Exception(f"HF API Error: {e}")
 
     llm = HuggingFaceChatLLM(
-        repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+        repo_id="Qwen/Qwen2.5-72B-Instruct",
         api_token=hf_token
     )
 
