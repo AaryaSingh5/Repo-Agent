@@ -13,7 +13,7 @@
 
 - **Any Repository:** Point the agent at any local folder or repository, and it will automatically ingest all supported text and source code files.
 - **Privacy-First Embeddings:** Vector embeddings are generated 100% locally on your machine using `sentence-transformers`, meaning your raw code is never sent to a third-party embedding API.
-- **Cost-Free LLM Inference:** Powered by the free Hugging Face Inference API, utilizing state-of-the-art open-weight models (like Mistral or Zephyr) without requiring an expensive API subscription or local GPU.
+- **Cost-Free LLM Inference:** Powered by the free Hugging Face Inference API, utilizing state-of-the-art open-weight models (like Qwen2.5 or Llama 3) without requiring an expensive API subscription or local GPU.
 - **Robust Parsing:** Automatically handles various file extensions, detects encodings, and splits code into semantic chunks optimized for context window limits.
 
 ---
@@ -129,7 +129,7 @@ Based on the provided context, the `ingest.py` script is responsible for the fol
 ## ⚙️ Configuration & Customization
 
 You can easily modify the scripts to fit your specific needs:
-- **Change the LLM:** In `agent.py`, change `repo_id="mistralai/Mistral-7B-Instruct-v0.2"` to any other free Instruct model on the Hugging Face Hub (e.g., `HuggingFaceH4/zephyr-7b-beta`).
+- **Change the LLM:** In `agent.py`, change `repo_id="Qwen/Qwen2.5-72B-Instruct"` to any other free Instruct model on the Hugging Face Hub (e.g., `meta-llama/Llama-3.2-1B-Instruct`). The custom LLM implementation uses the official `InferenceClient` from `huggingface_hub` to ensure robust routing and reliability.
 - **Change the Chunk Size:** In `ingest.py`, modify `chunk_size` and `chunk_overlap` in the `RecursiveCharacterTextSplitter` initialization to fine-tune how much code is sent in a single context block.
 
 ---
