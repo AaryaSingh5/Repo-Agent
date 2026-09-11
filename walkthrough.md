@@ -9,7 +9,7 @@ I created a Python project in your `New folder` with the following components:
 1.  [`requirements.txt`](file:///c:/Users/Intel/OneDrive/Desktop/New%20folder/requirements.txt): Contains all the necessary libraries (`langchain`, `faiss-cpu`, `sentence-transformers`, etc.).
 2.  [`.env.example`](file:///c:/Users/Intel/OneDrive/Desktop/New%20folder/.env.example): A template for your environment variables.
 3.  [`ingest.py`](file:///c:/Users/Intel/OneDrive/Desktop/New%20folder/ingest.py): The script that loads your code repository, splits the code into chunks, generates vector embeddings locally using `sentence-transformers`, and saves them into a local FAISS database.
-4.  [`agent.py`](file:///c:/Users/Intel/OneDrive/Desktop/New%20folder/agent.py): The interactive query script. It loads the FAISS index, initializes the free Hugging Face LLM API (`Mistral-7B-Instruct-v0.2`), and lets you ask questions about the indexed codebase.
+4.  [`agent.py`](file:///c:/Users/Intel/OneDrive/Desktop/New%20folder/agent.py): The interactive query script. It loads the FAISS index, initializes the free Hugging Face LLM API (now using the extremely capable `Qwen/Qwen2.5-72B-Instruct` via the robust `huggingface_hub.InferenceClient`), and lets you ask questions about the indexed codebase.
 
 > [!NOTE]  
 > The dependencies have already been installed in your main Python 3.13 environment.
