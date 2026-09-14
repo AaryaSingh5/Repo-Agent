@@ -39,6 +39,14 @@ Start the interactive Q&A agent:
 ```bash
 python agent.py
 ```
+
+> [!TIP]  
+> If you want to dynamically clone and analyze a new repository, you can pass the `--repo` argument directly to `agent.py`. It works with local paths and Git URLs!
+> ```bash
+> python agent.py --repo https://github.com/psf/requests
+> ```
+> This will automatically clone the repository, run ingestion, and start the agent on that codebase.
+
 Once it initializes, you can type your questions (e.g., "What does the ingest script do?" or "How is the FAISS database created?"). The agent will retrieve the relevant code snippets and generate an answer using the free Hugging Face API!
 
 > [!TIP]  

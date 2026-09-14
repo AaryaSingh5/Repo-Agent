@@ -13,7 +13,10 @@ ENV/
 
 # Vector database
 faiss_index/
+*_faiss_index/
 
+# Cloned repositories
+repos/
 # OS generated files
 .DS_Store
 .DS_Store?

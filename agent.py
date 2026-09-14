@@ -1,8 +1,10 @@
 import os
 import argparse
+import subprocess
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEndpointEmbeddings, HuggingFaceEndpoint
+from ingest import ingest_repository
 # Removed legacy chains imports
 
 def load_agent(index_path: str = "faiss_index"):
@@ -99,10 +101,39 @@ def load_agent(index_path: str = "faiss_index"):
     rag_chain = CustomRAGChain(retriever, llm, system_prompt)
     return rag_chain
 
-def interactive_session(index_path: str = "faiss_index"):
+def prepare_repo(repo_path_or_url: str) -> tuple[str, str]:
+    """Prepares the repository by cloning if necessary and returning the local path and index path."""
+    if repo_path_or_url.startswith(("http://", "https://", "git@")):
+        repo_name = repo_path_or_url.rstrip("/").split("/")[-1].replace(".git", "")
+        local_repo_path = os.path.join("repos", repo_name)
+        if not os.path.exists(local_repo_path):
+            print(f"Cloning {repo_path_or_url} into {local_repo_path}...")
+            os.makedirs("repos", exist_ok=True)
+            subprocess.run(["git", "clone", repo_path_or_url, local_repo_path], check=True)
+        else:
+            print(f"Repository already cloned at {local_repo_path}")
+    else:
+        repo_name = os.path.basename(os.path.abspath(repo_path_or_url))
+        local_repo_path = repo_path_or_url
+        
+    index_path = f"{repo_name}_faiss_index"
+    if not os.path.exists(index_path):
+        print(f"Index '{index_path}' not found. Running ingestion for {local_repo_path}...")
+        ingest_repository(local_repo_path, save_path=index_path)
+        
+    return local_repo_path, index_path
+
+def interactive_session(index_path: str = "faiss_index", repo: str = None):
     """
     Starts an interactive Q&A loop.
     """
+    if repo:
+        try:
+            _, index_path = prepare_repo(repo)
+        except Exception as e:
+            print(f"Failed to prepare repository: {e}")
+            return
+
     try:
         rag_chain = load_agent(index_path)
     except Exception as e:
@@ -147,6 +178,7 @@ if __name__ == "__main__":
     load_dotenv()
     parser = argparse.ArgumentParser(description="Query the ingested code repository.")
     parser.add_argument("--index", type=str, default="faiss_index", help="Path to the saved FAISS index.")
+    parser.add_argument("--repo", type=str, help="Path or URL to the repository to analyze.")
     
     args = parser.parse_args()
-    interactive_session(args.index)
+    interactive_session(args.index, args.repo)
