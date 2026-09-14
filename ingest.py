@@ -18,9 +18,10 @@ def ingest_repository(repo_path: str, save_path: str = "faiss_index"):
     loader = DirectoryLoader(
         repo_path,
         glob="**/*.*",
-        exclude=["**/node_modules/**", "**/venv/**", "**/.git/**", "**/__pycache__/**", "**/faiss_index/**"],
+        exclude=["**/node_modules/**", "**/venv/**", "**/.git/**", "**/__pycache__/**", "**/*.pyc", "**/faiss_index/**", "**/*_faiss_index/**", "**/*.faiss", "**/*.pkl", "**/.env*", "**/repos/**"],
         loader_cls=TextLoader,
-        loader_kwargs={"encoding": "utf-8"}
+        loader_kwargs={"encoding": "utf-8"},
+        silent_errors=True
     )
     
     print("Parsing files into documents...")

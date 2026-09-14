@@ -47,6 +47,13 @@ python agent.py
 > ```
 > This will automatically clone the repository, run ingestion, and start the agent on that codebase.
 
+> [!IMPORTANT]
+> You can also index an entire GitHub account! Use the `--github-user` argument to fetch, clone, and build a unified knowledge base across all repositories for a user:
+> ```bash
+> python agent.py --github-user AaryaSingh5
+> ```
+> *Note: This will clone all public repositories. To access private repositories, add a `GITHUB_TOKEN` to your `.env` file.*
+
 Once it initializes, you can type your questions (e.g., "What does the ingest script do?" or "How is the FAISS database created?"). The agent will retrieve the relevant code snippets and generate an answer using the free Hugging Face API!
 
 > [!TIP]  
