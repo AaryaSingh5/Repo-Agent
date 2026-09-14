@@ -12,6 +12,7 @@
 ## ✨ Features
 
 - **Any Repository:** Point the agent at any local folder or repository, and it will automatically ingest all supported text and source code files.
+- **Multi-Repository Access:** Seamlessly query across multiple repositories simultaneously. Specify repositories via GitHub shorthand (e.g., `psf/requests`) from the command line, or dynamically add them during a chat session without restarting!
 - **Privacy-First Embeddings:** Vector embeddings are generated 100% locally on your machine using `sentence-transformers`, meaning your raw code is never sent to a third-party embedding API.
 - **Cost-Free LLM Inference:** Powered by the free Hugging Face Inference API, utilizing state-of-the-art open-weight models (like Qwen2.5 or Llama 3) without requiring an expensive API subscription or local GPU.
 - **Robust Parsing:** Automatically handles various file extensions, detects encodings, and splits code into semantic chunks optimized for context window limits.
@@ -100,6 +101,23 @@ If you saved your index under a custom name, specify it:
 ```bash
 python agent.py --index "my_custom_index"
 ```
+
+**Multi-Repository Access & Dynamic Ingestion:**
+You can start the agent with multiple GitHub repositories at once using the `--repos` flag and GitHub shorthand:
+```bash
+python agent.py --repos psf/requests tiangolo/fastapi
+```
+
+Alternatively, you can dynamically add new repositories on the fly during your chat session using the `/add` command:
+```
+You: /add psf/requests
+
+Adding repository: psf/requests
+Cloning into 'repos\requests'...
+Ingesting new repository...
+Successfully merged and updated index.
+```
+The agent will dynamically clone, ingest, and merge the new code into your active FAISS index without losing context!
 
 **Example Interaction:**
 ```
