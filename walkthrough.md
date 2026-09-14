@@ -41,11 +41,11 @@ python agent.py
 ```
 
 > [!TIP]  
-> If you want to dynamically clone and analyze a new repository, you can pass the `--repo` argument directly to `agent.py`. It works with local paths and Git URLs!
+> You can launch the agent with multiple repositories simultaneously using the `--repos` argument! You can pass local paths or GitHub shorthands (e.g., `user/repo`):
 > ```bash
-> python agent.py --repo https://github.com/psf/requests
+> python agent.py --repos psf/requests tiangolo/fastapi
 > ```
-> This will automatically clone the repository, run ingestion, and start the agent on that codebase.
+> This will automatically clone, index, and merge all of them into a single knowledge base!
 
 > [!IMPORTANT]
 > You can also index an entire GitHub account! Use the `--github-user` argument to fetch, clone, and build a unified knowledge base across all repositories for a user:
@@ -54,7 +54,13 @@ python agent.py
 > ```
 > *Note: This will clone all public repositories. To access private repositories, add a `GITHUB_TOKEN` to your `.env` file.*
 
-Once it initializes, you can type your questions (e.g., "What does the ingest script do?" or "How is the FAISS database created?"). The agent will retrieve the relevant code snippets and generate an answer using the free Hugging Face API!
+Once it initializes, you can type your questions (e.g., "What does the ingest script do?"). The agent will retrieve the relevant code snippets and generate an answer using the free Hugging Face API!
+
+You can also dynamically add new repositories to the active knowledge base at any time by using the `/add` command in the chat:
+```text
+You: /add psf/requests
+```
+The agent will instantly download, parse, and merge the new repository's embeddings into your active session without losing context!
 
 > [!TIP]  
 > If you ever update your code, simply run `python ingest.py` again to refresh the vector database.
