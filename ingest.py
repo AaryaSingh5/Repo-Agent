@@ -3,7 +3,7 @@ import argparse
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 def ingest_repository(repo_path: str, save_path: str = "faiss_index"):
@@ -44,20 +44,20 @@ def ingest_repository(repo_path: str, save_path: str = "faiss_index"):
         raise ValueError("Please set a valid HUGGINGFACEHUB_API_TOKEN in the .env file.")
 
     # Initialize the embedding model using the Hugging Face Free API
-    print("Loading embedding model via Free API (sentence-transformers/all-MiniLM-L6-v2)...")
-    embeddings = HuggingFaceEndpointEmbeddings(
-        model="sentence-transformers/all-MiniLM-L6-v2",
-        task="feature-extraction",
-        huggingfacehub_api_token=hf_token
-    )
+    print(f"Loading embedding model (sentence-transformers/all-MiniLM-L6-v2) locally...")
+    # Change: using local embeddings instead of the API endpoint to avoid rate limits
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
     # Create the FAISS index from the chunks
     print("Generating embeddings and building FAISS vector database...")
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
-    # Save the index locally
-    vectorstore.save_local(save_path)
-    print(f"Successfully saved FAISS index to {save_path}")
+    # Save the index locally if save_path is provided
+    if save_path:
+        vectorstore.save_local(save_path)
+        print(f"Successfully saved FAISS index to {save_path}")
+        
+    return vectorstore
 
 if __name__ == "__main__":
     load_dotenv()
